@@ -1,0 +1,2752 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>设备协议管理系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .main-tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 30px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            padding: 4px;
+        }
+
+        .main-tab {
+            flex: 1;
+            padding: 15px 30px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: 500;
+            color: #666;
+            transition: all 0.3s;
+            border-radius: 6px;
+        }
+
+        .main-tab.active {
+            background: white;
+            color: #1890ff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .main-content {
+            display: none;
+        }
+
+        .main-content.active {
+            display: block;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            color: #666;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            color: #1890ff;
+            border-bottom: 2px solid #1890ff;
+            margin-bottom: -2px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: #1890ff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+            margin-right: 10px;
+        }
+
+        button:hover {
+            background: #40a9ff;
+        }
+
+        button.delete {
+            background: #ff4d4f;
+        }
+
+        button.delete:hover {
+            background: #ff7875;
+        }
+
+        button.edit {
+            background: #52c41a;
+        }
+
+        button.edit:hover {
+            background: #73d13d;
+        }
+
+        button.add-version {
+            background: #fa8c16;
+            margin-top: 10px;
+        }
+
+        button.add-version:hover {
+            background: #ffa940;
+        }
+
+        .data-list {
+            margin-top: 30px;
+        }
+
+        .data-item {
+            background: #fafafa;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            border-left: 4px solid #1890ff;
+        }
+
+        .data-item h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .data-item p {
+            color: #666;
+            margin: 5px 0;
+        }
+
+        .actions {
+            margin-top: 10px;
+        }
+
+        .nested-list {
+            margin-left: 20px;
+            margin-top: 10px;
+            padding-left: 15px;
+            border-left: 2px solid #e0e0e0;
+        }
+
+        .nested-item {
+            background: white;
+            padding: 10px;
+            margin: 8px 0;
+            border-radius: 4px;
+        }
+
+        .device-card {
+            background: linear-gradient(145deg, #ffffff, #f0f2f5);
+            border: none;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow:
+                0 4px 6px rgba(0, 0, 0, 0.04),
+                0 10px 24px rgba(0, 0, 0, 0.08),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+            will-change: transform;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .device-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #1890ff, #36cfc9);
+            border-radius: 16px 16px 0 0;
+        }
+
+        .device-card:hover {
+            transform: translateY(-6px) scale(1.02);
+            box-shadow:
+                0 8px 16px rgba(0, 0, 0, 0.06),
+                0 20px 40px rgba(24, 144, 255, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.9);
+        }
+
+        .device-card h2 {
+            color: #1890ff;
+            margin-bottom: 10px;
+            font-size: 18px;
+            border-bottom: 2px solid #1890ff;
+            padding-bottom: 8px;
+        }
+
+        .device-info {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .device-info-label {
+            font-weight: 600;
+            color: #999;
+            min-width: 60px;
+        }
+
+        .device-info-value {
+            color: #333;
+            flex: 1;
+            font-weight: 500;
+        }
+
+        .device-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            perspective: 1200px;
+        }
+
+        @media (max-width: 1200px) {
+            .device-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .device-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+            justify-content: flex-end;
+        }
+
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            padding: 0;
+            margin: 0;
+        }
+
+        .icon-btn:hover {
+            transform: scale(1.15);
+        }
+
+        .icon-btn.btn-export {
+            background: linear-gradient(135deg, #52c41a, #73d13d);
+            color: white;
+            box-shadow: 0 3px 8px rgba(82, 196, 26, 0.35);
+        }
+
+        .icon-btn.btn-detail {
+            background: linear-gradient(135deg, #1890ff, #40a9ff);
+            color: white;
+            box-shadow: 0 3px 8px rgba(24, 144, 255, 0.35);
+        }
+
+        .icon-btn .btn-tooltip {
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%) translateY(4px);
+            background: rgba(0, 0, 0, 0.75);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s, transform 0.2s;
+        }
+
+        .icon-btn .btn-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid transparent;
+            border-top-color: rgba(0, 0, 0, 0.75);
+        }
+
+        .icon-btn:hover .btn-tooltip {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .device-section {
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .device-section h3 {
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .version-badge {
+            display: inline-block;
+            background: #fff7e6;
+            color: #fa8c16;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .function-card {
+            background: #f9f9f9;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 4px;
+            border-left: 3px solid #52c41a;
+        }
+
+        .function-card h4 {
+            color: #52c41a;
+            margin-bottom: 6px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .function-info {
+            font-size: 12px;
+            color: #666;
+            margin: 3px 0;
+        }
+
+        .function-info strong {
+            color: #333;
+            border-radius: 6px;
+            border-left: 3px solid #52c41a;
+        }
+
+        .function-card h4 {
+            color: #52c41a;
+            margin-bottom: 8px;
+            font-size: 15px;
+        }
+
+        .attribute-tag {
+            display: inline-block;
+            background: #e6f7ff;
+            color: #1890ff;
+            padding: 2px 8px;
+            border-radius: 3px;
+            margin: 3px 3px 3px 0;
+            font-size: 11px;
+        }
+
+        .export-btn {
+            background: #52c41a;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-top: 10px;
+            width: 100%;
+            transition: background 0.3s;
+        }
+
+        .export-btn:hover {
+            background: #73d13d;
+        }
+
+        .device-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+            padding-bottom: 10px;
+            border-bottom: none;
+        }
+
+        .device-card-header h2 {
+            margin: 0;
+            padding: 0;
+            border: none;
+            font-size: 17px;
+            color: #1a1a2e;
+            font-weight: 700;
+        }
+
+        .device-type-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.92);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.14);
+            backdrop-filter: blur(6px);
+            transition: transform 0.22s ease, box-shadow 0.22s ease;
+            z-index: 2;
+            overflow: hidden;
+        }
+
+        .device-type-badge:hover {
+            transform: scale(1.12);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.2);
+        }
+
+        .device-type-badge img {
+            width: 38px;
+            height: 38px;
+            object-fit: contain;
+        }
+
+        .device-type-badge.type-ring {
+            background: linear-gradient(135deg, rgba(240,240,240,0.95), rgba(255,255,255,0.92));
+        }
+
+        .device-type-badge.type-watch {
+            background: linear-gradient(135deg, rgba(235,240,248,0.95), rgba(255,255,255,0.92));
+        }
+
+        .version-instance {
+            background: #fff7e6;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 6px;
+            border-left: 3px solid #fa8c16;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .storage-info {
+            background: #e6f7ff;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        /* 项目下拉选择器样式 */
+        .project-select-wrapper {
+            position: absolute;
+            top: 18px;
+            left: 24px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 10;
+        }
+
+        .project-select-label {
+            color: #667eea;
+            font-weight: 600;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+
+        .project-select {
+            padding: 6px 28px 6px 10px;
+            border: 2px solid #667eea;
+            border-radius: 20px;
+            background: white;
+            color: #333;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            outline: none;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23667eea' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            box-shadow: 0 1px 4px rgba(102, 126, 234, 0.2);
+            transition: all 0.2s;
+            min-width: 140px;
+        }
+
+        .project-select:hover, .project-select:focus {
+            border-color: #764ba2;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.35);
+        }
+
+        .project-btn.active .project-badge {
+            background: #667eea;
+            color: white;
+        }
+
+        .project-description {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 13px;
+            margin-top: 8px;
+            padding-left: 20px;
+        }
+
+        /* 项目指示器 */
+        .current-project-indicator {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .current-project-indicator::before {
+            content: '●';
+            font-size: 8px;
+        }
+
+        .auth-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .auth-box {
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .auth-box h2 {
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .auth-box input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        .auth-box button {
+            width: 100%;
+            padding: 12px;
+            background: #1890ff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .auth-box button:hover {
+            background: #40a9ff;
+        }
+
+        .auth-error {
+            color: #ff4d4f;
+            font-size: 14px;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .auth-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .auth-status.readonly {
+            background: #fff7e6;
+            border: 1px solid #ffa940;
+        }
+
+        .auth-status.admin {
+            background: #f6ffed;
+            border: 1px solid #52c41a;
+        }
+
+        .auth-status button {
+            padding: 5px 15px;
+            font-size: 12px;
+            margin: 0;
+        }
+
+        .readonly-hint {
+            background: #fff7e6;
+            border: 1px solid #ffa940;
+            padding: 10px 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            color: #d46b08;
+            text-align: center;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .modal-header h2 {
+            color: #333;
+            margin: 0;
+        }
+
+        .close-modal {
+            background: #ff4d4f;
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+
+        /* 设备详情弹窗 */
+        .detail-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1500;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .detail-modal-overlay.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .detail-modal {
+            background: #f8f9fa;
+            border-radius: 12px;
+            max-width: 720px;
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.25s ease;
+        }
+
+        .detail-modal-header {
+            position: sticky;
+            top: 0;
+            background: linear-gradient(135deg, #1890ff, #096dd9);
+            color: white;
+            padding: 24px 28px;
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1;
+        }
+
+        .detail-modal-header h2 {
+            margin: 0;
+            font-size: 20px;
+            color: white;
+        }
+
+        .detail-modal-header .spcid-label {
+            font-size: 13px;
+            opacity: 0.85;
+            margin-top: 4px;
+        }
+
+        .detail-modal-close {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+            margin: 0;
+            padding: 0;
+        }
+
+        .detail-modal-close:hover {
+            background: rgba(255, 255, 255, 0.35);
+        }
+
+        .detail-modal-body {
+            padding: 24px 28px 28px;
+        }
+
+        .detail-version-block {
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+            overflow: hidden;
+        }
+
+        .detail-version-header {
+            background: #fff7e6;
+            padding: 12px 18px;
+            border-bottom: 1px solid #ffe7ba;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .detail-version-header .version-badge {
+            margin: 0;
+        }
+
+        .detail-version-header .func-count {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .detail-func-list {
+            padding: 14px 18px;
+        }
+
+        .detail-func-item {
+            padding: 12px 14px;
+            background: #fafafa;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            border-left: 3px solid #52c41a;
+        }
+
+        .detail-func-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .detail-func-item h4 {
+            color: #52c41a;
+            margin: 0 0 6px;
+            font-size: 14px;
+        }
+
+        .detail-func-item .function-info {
+            margin: 0;
+        }
+
+        .detail-empty {
+            text-align: center;
+            color: #bbb;
+            padding: 30px 0;
+            font-size: 14px;
+        }
+
+        .selection-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .selection-card {
+            background: #fafafa;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .selection-card:hover {
+            border-color: #1890ff;
+            background: #e6f7ff;
+        }
+
+        .selection-card.selected {
+            border-color: #1890ff;
+            background: #e6f7ff;
+        }
+
+        .selection-card h4 {
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+
+        .selection-card p {
+            color: #666;
+            font-size: 13px;
+            margin: 4px 0;
+        }
+
+        .checkbox-card {
+            position: relative;
+        }
+
+        .checkbox-card::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            background: white;
+        }
+
+        .checkbox-card.selected::before {
+            background: #1890ff;
+            border-color: #1890ff;
+        }
+
+        .checkbox-card.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 8px;
+            right: 14px;
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .radio-card {
+            position: relative;
+        }
+
+        .radio-card::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ddd;
+            border-radius: 50%;
+            background: white;
+        }
+
+        .radio-card.selected::before {
+            border-color: #1890ff;
+        }
+
+        .radio-card.selected::after {
+            content: '';
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #1890ff;
+        }
+
+        .attr-input-group {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            border-left: 3px solid #52c41a;
+        }
+
+        .attr-input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 10px;
+            align-items: center;
+        }
+
+        /* 表单弹窗样式 */
+        .form-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.55);
+            z-index: 1800;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            backdrop-filter: blur(4px);
+            animation: fadeIn 0.2s ease;
+        }
+
+        .form-modal-overlay.active {
+            display: flex;
+        }
+
+        @keyframes formModalSlideUp {
+            from { opacity: 0; transform: translateY(25px) scale(0.96); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .form-modal {
+            background: #fff;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 520px;
+            max-height: 90vh;
+            overflow: hidden;
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.25);
+            animation: formModalSlideUp 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .form-modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 22px 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .form-modal-header h2 {
+            color: white;
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .form-modal-close {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            margin: 0;
+            padding: 0;
+        }
+
+        .form-modal-close:hover {
+            background: rgba(255,255,255,0.35);
+            transform: rotate(90deg);
+        }
+
+        .form-modal-body {
+            padding: 28px 32px 32px;
+            overflow-y: auto;
+            max-height: calc(90vh - 70px);
+        }
+
+        .form-modal-body .form-group {
+            margin-bottom: 22px;
+        }
+
+        .form-modal-body label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .form-modal-body input,
+        .form-modal-body select {
+            padding: 12px 14px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.2s;
+            background: #fafafa;
+        }
+
+        .form-modal-body input:focus,
+        .form-modal-body select:focus {
+            border-color: #667eea;
+            background: #fff;
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.12);
+        }
+
+        .form-modal-body .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .form-modal-body .form-row-three {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 16px;
+        }
+
+        .form-modal-body button[type="submit"] {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 14px 32px;
+            font-size: 15px;
+            font-weight: 600;
+            border-radius: 10px;
+            margin-right: 12px;
+            width: auto;
+            display: inline-block;
+        }
+
+        .form-modal-body button[type="submit"]:hover {
+            background: linear-gradient(135deg, #5a6fd6 0%, #6a4190 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.35);
+        }
+
+        .form-modal-body button[type="button"].btn-cancel {
+            background: #f3f4f6;
+            color: #6b7280;
+            padding: 14px 24px;
+            font-size: 15px;
+            font-weight: 500;
+            border-radius: 10px;
+        }
+
+        .form-modal-body button[type="button"].btn-cancel:hover {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        .form-modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 28px;
+            padding-top: 20px;
+            border-top: 1px solid #f3f4f6;
+        }
+
+        .form-modal-body .attr-input-group {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-left: 4px solid #667eea;
+        }
+
+        .form-modal-body .add-attr-btn {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            padding: 10px 18px;
+            font-size: 13px;
+            border-radius: 8px;
+            margin-top: 8px;
+        }
+
+        .form-modal-body .add-attr-btn:hover {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        }
+
+        .form-modal-body .delete-attr-btn {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 8px 14px;
+            font-size: 12px;
+            border-radius: 6px;
+        }
+
+        .form-modal-body .delete-attr-btn:hover {
+            background: #fecaca;
+        }
+
+        /* 统一按钮样式 */
+        .add-new-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 14px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .add-new-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        /* 设备类型过滤按钮 */
+        .device-filter .filter-btn {
+            padding: 8px 16px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .device-filter .filter-btn:hover {
+            background: #f5f5f5;
+        }
+
+        .device-filter .filter-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
+    </style>
+</head>
+<body>
+    <!-- 权限状态显示 -->
+    <div id="authStatus" class="auth-status readonly">
+        <span id="authStatusText">只读模式</span>
+        <button onclick="showLoginDialog()">登录管理</button>
+    </div>
+
+    <div class="container" style="position: relative;">
+        <!-- 项目下拉选择器（左上角） -->
+        <div class="project-select-wrapper" id="projectSwitcher">
+            <span class="project-select-label">项目:</span>
+            <select class="project-select" id="projectSelect" onchange="switchProject(this.value)"></select>
+        </div>
+
+        <h1>设备协议管理系统</h1>
+
+        <div class="main-tabs">
+            <button class="main-tab active" onclick="switchMainTab('home')">主页展示</button>
+            <button class="main-tab" id="manageTab" onclick="switchMainTab('manage')" style="display: none;">数据管理</button>
+        </div>
+
+        <!-- 主页展示 -->
+        <div id="home" class="main-content active">
+            <div id="deviceDisplay"></div>
+        </div>
+
+        <!-- 数据管理 -->
+        <div id="manage" class="main-content">
+            <div class="readonly-hint" id="readonlyHint" style="display: none;">
+                🔒 当前为只读模式,请登录后进行管理操作
+            </div>
+            
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('device')">设备管理</button>
+                <button class="tab" onclick="switchTab('function')">业务功能管理</button>
+                <button class="tab" onclick="switchTab('version')">协议版本号管理</button>
+            </div>
+
+            <!-- 设备管理 -->
+            <div id="device" class="tab-content active">
+                <div class="data-list" id="deviceList"></div>
+            </div>
+
+            <!-- 业务功能管理 -->
+            <div id="function" class="tab-content">
+                <div class="data-list" id="functionList"></div>
+            </div>
+
+            <!-- 协议版本号管理 -->
+            <div id="version" class="tab-content">
+                <div class="data-list" id="versionList"></div>
+            </div>
+
+            <div class="storage-info">
+                <p>数据自动保存到服务器本地存储</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加设备版本模态框 -->
+    <div id="addVersionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>添加协议版本</h2>
+                <button class="close-modal" onclick="closeModal('addVersionModal')">关闭</button>
+            </div>
+            <div>
+                <h3 style="margin-bottom: 15px;">选择协议版本号</h3>
+                <div class="selection-grid" id="versionSelectionGrid"></div>
+            </div>
+            <button onclick="confirmAddVersion()" style="margin-top: 20px;">确认添加</button>
+        </div>
+    </div>
+
+    <!-- 编辑设备版本模态框 -->
+    <div id="editVersionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>编辑版本业务功能</h2>
+                <button class="close-modal" onclick="closeModal('editVersionModal')">关闭</button>
+            </div>
+            <div id="editVersionContent"></div>
+            <button onclick="confirmEditVersion()" style="margin-top: 20px;">确认保存</button>
+        </div>
+    </div>
+
+    <!-- 设备详情弹窗 -->
+    <div id="deviceDetailOverlay" class="detail-modal-overlay" onclick="if(event.target===this)closeDeviceDetail()">
+        <div class="detail-modal">
+            <div class="detail-modal-header">
+                <div>
+                    <h2 id="detailDeviceName"></h2>
+                    <div class="spcid-label" id="detailDeviceSpcid"></div>
+                </div>
+                <button class="detail-modal-close" onclick="closeDeviceDetail()">✕</button>
+            </div>
+            <div class="detail-modal-body" id="detailDeviceBody"></div>
+        </div>
+    </div>
+
+    <!-- 登录对话框 -->
+    <div id="loginOverlay" class="auth-overlay" style="display: none;">
+        <div class="auth-box">
+            <h2>🔐 管理员登录</h2>
+            <input type="password" id="loginPassword" placeholder="请输入管理密码" onkeypress="if(event.key==='Enter') login()">
+            <button onclick="login()">登录</button>
+            <div id="loginError" class="auth-error"></div>
+        </div>
+    </div>
+
+    <!-- 设备表单弹窗 -->
+    <div id="deviceFormModal" class="form-modal-overlay" onclick="if(event.target===this)closeFormModal('deviceFormModal')">
+        <div class="form-modal">
+            <div class="form-modal-header">
+                <h2>添加/编辑设备</h2>
+                <button class="form-modal-close" onclick="closeFormModal('deviceFormModal')">✕</button>
+            </div>
+            <div class="form-modal-body">
+                <form id="deviceFormModalForm">
+                    <input type="hidden" id="deviceFormId">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>设备名称 *</label>
+                            <input type="text" id="deviceFormName" placeholder="请输入设备名称" required>
+                        </div>
+                        <div class="form-group">
+                            <label>设备SPCID *</label>
+                            <input type="text" id="deviceFormSpcid" placeholder="请输入设备SPCID" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>设备类型 *</label>
+                        <select id="deviceFormType">
+                            <option value="ring">戒指类</option>
+                            <option value="watch">手表手环类</option>
+                        </select>
+                    </div>
+                    <div class="form-modal-actions">
+                        <button type="button" class="btn-cancel" onclick="closeFormModal('deviceFormModal')">取消</button>
+                        <button type="submit">保存设备</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 版本号表单弹窗 -->
+    <div id="versionFormModal" class="form-modal-overlay" onclick="if(event.target===this)closeFormModal('versionFormModal')">
+        <div class="form-modal">
+            <div class="form-modal-header">
+                <h2>添加/编辑协议版本号</h2>
+                <button class="form-modal-close" onclick="closeFormModal('versionFormModal')">✕</button>
+            </div>
+            <div class="form-modal-body">
+                <form id="versionFormModalForm">
+                    <div class="form-group">
+                        <label>版本号 *</label>
+                        <input type="text" id="versionFormNumber" placeholder="例如: 0, 1.0.0" value="0" required>
+                    </div>
+                    <div class="form-modal-actions">
+                        <button type="button" class="btn-cancel" onclick="closeFormModal('versionFormModal')">取消</button>
+                        <button type="submit">保存版本号</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 业务功能表单弹窗 -->
+    <div id="functionFormModal" class="form-modal-overlay" onclick="if(event.target===this)closeFormModal('functionFormModal')">
+        <div class="form-modal">
+            <div class="form-modal-header">
+                <h2>添加/编辑业务功能</h2>
+                <button class="form-modal-close" onclick="closeFormModal('functionFormModal')">✕</button>
+            </div>
+            <div class="form-modal-body">
+                <form id="functionFormModalForm">
+                    <input type="hidden" id="functionFormId">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>功能名称 *</label>
+                            <input type="text" id="functionFormName" placeholder="请输入功能名称" required>
+                        </div>
+                        <div class="form-group">
+                            <label>业务编码 *</label>
+                            <input type="text" id="functionFormCode" placeholder="请输入业务编码" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>属性类型 *</label>
+                        <select id="functionFormAttrType" required>
+                            <option value="无">无</option>
+                            <option value="互斥属性">互斥属性</option>
+                            <option value="共享属性">共享属性</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>功能属性</label>
+                        <div id="functionFormAttributesList"></div>
+                        <button type="button" class="add-attr-btn" onclick="addFunctionFormAttribute()">+ 添加属性</button>
+                    </div>
+                    <div class="form-modal-actions">
+                        <button type="button" class="btn-cancel" onclick="closeFormModal('functionFormModal')">取消</button>
+                        <button type="submit">保存业务功能</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 权限管理
+        const ADMIN_PASSWORD = '6666';
+        let isAdmin = false;
+
+        // 数据存储结构（多项目）
+        // projects: { [projectId]: { id, name, description, devices: [...] } }
+        // functions: [{ id, name, code, attrType, attributes: [{ id, name, code }] }]
+        // versionNumbers: ['0', '1.0.0', ...]
+        let data = {
+            projects: {},
+            functions: [],
+            versionNumbers: ['0']
+        };
+
+        // 当前选中的项目
+        let currentProject = 'life';
+
+        // 当前设备类型过滤器 (all/ring/watch)
+        let deviceTypeFilter = 'all';
+
+        let currentEditDevice = null;
+        let currentEditVersionIndex = null;
+
+        // 获取当前项目的设备列表
+        function getCurrentProjectDevices() {
+            if (data.projects[currentProject]) {
+                return data.projects[currentProject].devices || [];
+            }
+            return [];
+        }
+
+        // 设置当前项目的设备列表
+        function setCurrentProjectDevices(devices) {
+            if (data.projects[currentProject]) {
+                data.projects[currentProject].devices = devices;
+            }
+        }
+
+        // 渲染项目切换器
+        function renderProjectSwitcher() {
+            const select = document.getElementById('projectSelect');
+            if (!select) return;
+            const projectIds = Object.keys(data.projects);
+
+            if (projectIds.length === 0) {
+                select.innerHTML = '<option>加载中...</option>';
+                return;
+            }
+
+            select.innerHTML = projectIds.map(id => {
+                const project = data.projects[id];
+                const count = project.devices ? project.devices.length : 0;
+                return `<option value="${id}" ${id === currentProject ? 'selected' : ''}>${project.name}（${count}）</option>`;
+            }).join('');
+        }
+
+        // 切换项目
+        function switchProject(projectId) {
+            currentProject = projectId;
+            localStorage.setItem('lastProject', projectId);
+            renderProjectSwitcher();
+            renderAll();
+        }
+
+        // 获取当前项目名称
+        function getCurrentProjectName() {
+            if (data.projects[currentProject]) {
+                return data.projects[currentProject].name;
+            }
+            return '未知项目';
+        }
+
+        // 设置设备类型过滤器
+        function setDeviceTypeFilter(type) {
+            deviceTypeFilter = type;
+            renderDeviceDisplay();
+        }
+
+        // 显示登录对话框
+        function showLoginDialog() {
+            if (isAdmin) {
+                if (confirm('确定要退出管理模式吗?')) {
+                    logout();
+                }
+            } else {
+                document.getElementById('loginOverlay').style.display = 'flex';
+                document.getElementById('loginPassword').value = '';
+                document.getElementById('loginError').textContent = '';
+                document.getElementById('loginPassword').focus();
+            }
+        }
+
+        // 登录
+        function login() {
+            const password = document.getElementById('loginPassword').value;
+            if (password === ADMIN_PASSWORD) {
+                isAdmin = true;
+                document.getElementById('loginOverlay').style.display = 'none';
+                updateAuthStatus();
+                // 登录成功后自动切换到管理页面
+                switchMainTab('manage');
+                alert('登录成功!现在可以进行管理操作');
+            } else {
+                document.getElementById('loginError').textContent = '密码错误,请重试';
+            }
+        }
+
+        // 退出登录
+        function logout() {
+            isAdmin = false;
+            updateAuthStatus();
+            // 如果在管理页面,切换到主页
+            if (document.getElementById('manage').classList.contains('active')) {
+                switchMainTab('home');
+            }
+        }
+
+        // 更新权限状态显示
+        function updateAuthStatus() {
+            const statusDiv = document.getElementById('authStatus');
+            const statusText = document.getElementById('authStatusText');
+            const readonlyHint = document.getElementById('readonlyHint');
+            const manageTab = document.getElementById('manageTab');
+            
+            if (isAdmin) {
+                statusDiv.className = 'auth-status admin';
+                statusText.textContent = '管理员模式';
+                statusDiv.querySelector('button').textContent = '退出登录';
+                if (readonlyHint) readonlyHint.style.display = 'none';
+                // 显示管理标签
+                if (manageTab) manageTab.style.display = 'block';
+            } else {
+                statusDiv.className = 'auth-status readonly';
+                statusText.textContent = '只读模式';
+                statusDiv.querySelector('button').textContent = '登录管理';
+                if (readonlyHint && document.getElementById('manage').classList.contains('active')) {
+                    readonlyHint.style.display = 'block';
+                }
+                // 隐藏管理标签
+                if (manageTab) manageTab.style.display = 'none';
+            }
+        }
+
+        // 检查权限
+        function checkPermission(action) {
+            if (!isAdmin) {
+                alert('此操作需要管理员权限,请先登录');
+                showLoginDialog();
+                return false;
+            }
+            return true;
+        }
+
+        // 初始化
+        async function init() {
+            await loadData();
+            // 恢复上次选中的项目，如果没有则默认为 'life'
+            const lastProject = localStorage.getItem('lastProject');
+            if (lastProject && data.projects[lastProject]) {
+                currentProject = lastProject;
+            } else {
+                currentProject = 'life';
+            }
+            renderProjectSwitcher();
+            renderAll();
+            setupEventListeners();
+            updateAuthStatus();
+        }
+
+        // 加载数据
+        async function loadData() {
+            try {
+                const response = await fetch('/api/data');
+                console.log('API响应状态:', response.status);
+                if (response.ok) {
+                    const serverData = await response.json();
+                    console.log('API返回数据keys:', Object.keys(serverData));
+                    console.log('API返回数据:', JSON.stringify(serverData).substring(0, 200));
+                    
+                    // 关键：把服务器数据赋给 data
+                    data = serverData;
+                    console.log('赋值后 data.projects[life].devices:', data.projects['life'] ? data.projects['life'].devices.length : '不存在');
+
+                    // 确保数据结构兼容（支持新旧两种格式）
+                    if (!serverData.projects) {
+                        // 旧格式：只有一个 devices 数组
+                        data.projects = {
+                            life: {
+                                id: "life",
+                                name: "iQibla Life",
+                                description: "iQibla Life 产品线设备管理",
+                                devices: serverData.devices || []
+                            },
+                            health: {
+                                id: "health",
+                                name: "iQibla Health",
+                                description: "iQibla Health 产品线设备管理",
+                                devices: []
+                            }
+                        };
+                        // 删除旧的 devices 字段
+                        delete serverData.devices;
+                    }
+
+                    if (!serverData.versionNumbers) serverData.versionNumbers = ['0'];
+
+                    console.log('处理后 data.projects[life].devices:', data.projects['life'] ? data.projects['life'].devices.length : '不存在');
+
+                    currentProject = 'life';
+
+                    // 确保当前项目存在
+                    if (!data.projects[currentProject]) {
+                        const firstProject = Object.keys(data.projects)[0];
+                        if (firstProject) {
+                            currentProject = firstProject;
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('加载数据失败:', error);
+                alert('无法连接到服务器,请检查服务器是否运行');
+            }
+        }
+
+        // 保存数据
+        async function saveData() {
+            try {
+                const response = await fetch('/api/data', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                if (!response.ok) {
+                    throw new Error('保存失败');
+                }
+            } catch (error) {
+                console.error('保存数据失败:', error);
+                alert('保存数据失败,请检查服务器连接');
+            }
+        }
+
+        // 切换主标签
+        function switchMainTab(tabName) {
+            // 切换到管理页面需要检查权限
+            if (tabName === 'manage' && !isAdmin) {
+                alert('请先登录后才能访问管理页面');
+                showLoginDialog();
+                return;
+            }
+            
+            document.querySelectorAll('.main-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.main-content').forEach(content => content.classList.remove('active'));
+            
+            // 找到对应的标签按钮并激活
+            const tabs = document.querySelectorAll('.main-tab');
+            tabs.forEach(tab => {
+                if ((tabName === 'home' && tab.textContent.includes('主页')) ||
+                    (tabName === 'manage' && tab.textContent.includes('管理'))) {
+                    tab.classList.add('active');
+                }
+            });
+            
+            document.getElementById(tabName).classList.add('active');
+
+            if (tabName === 'home') {
+                renderDeviceDisplay();
+            }
+        }
+
+        // 切换标签
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+        }
+
+        // 设置事件监听
+        function setupEventListeners() {
+            // 三个表单弹窗的事件绑定
+            document.getElementById('deviceFormModalForm').addEventListener('submit', handleDeviceFormSubmit);
+            document.getElementById('functionFormModalForm').addEventListener('submit', handleFunctionFormSubmit);
+            document.getElementById('versionFormModalForm').addEventListener('submit', handleVersionFormSubmit);
+        }
+
+        // 打开表单弹窗
+        function openFormModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // 关闭表单弹窗
+        function closeFormModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+            document.body.style.overflow = '';
+            // 重置表单
+            if (modalId === 'deviceFormModal') resetDeviceFormModal();
+            if (modalId === 'functionFormModal') resetFunctionFormModal();
+            if (modalId === 'versionFormModal') resetVersionFormModal();
+        }
+
+        // 表单弹窗：设备
+        function openAddDeviceModal() {
+            if (!checkPermission('添加设备')) return;
+            resetDeviceFormModal();
+            openFormModal('deviceFormModal');
+            document.getElementById('deviceFormName').focus();
+        }
+
+        function handleDeviceFormSubmit(e) {
+            e.preventDefault();
+            if (!checkPermission('添加/编辑设备')) return;
+
+            const id = document.getElementById('deviceFormId').value;
+            const spcid = document.getElementById('deviceFormSpcid').value;
+            const devices = getCurrentProjectDevices();
+
+            const existingDevice = devices.find(d => d.spcid === spcid && d.id !== id);
+            if (existingDevice) {
+                alert(`SPCID "${spcid}" 在当前项目 "${getCurrentProjectName()}" 中已存在，请使用不同的SPCID`);
+                return;
+            }
+
+            const device = {
+                id: id || Date.now().toString(),
+                name: document.getElementById('deviceFormName').value,
+                spcid: spcid,
+                deviceType: document.getElementById('deviceFormType').value,
+                versions: id ? devices.find(d => d.id === id).versions : []
+            };
+
+            if (id) {
+                const index = devices.findIndex(d => d.id === id);
+                devices[index] = device;
+            } else {
+                devices.push(device);
+            }
+
+            renderProjectSwitcher();
+            saveData();
+            closeFormModal('deviceFormModal');
+            renderDevices();
+            renderDeviceDisplay();
+        }
+
+        function resetDeviceFormModal() {
+            document.getElementById('deviceFormModalForm').reset();
+            document.getElementById('deviceFormId').value = '';
+        }
+
+        // 表单弹窗：版本号
+        function openAddVersionModal() {
+            if (!checkPermission('添加协议版本')) return;
+            resetVersionFormModal();
+            openFormModal('versionFormModal');
+            document.getElementById('versionFormNumber').focus();
+        }
+
+        function handleVersionFormSubmit(e) {
+            e.preventDefault();
+            if (!checkPermission('添加协议版本')) return;
+
+            const versionNumber = document.getElementById('versionFormNumber').value;
+            if (data.versionNumbers.includes(versionNumber)) {
+                alert('该版本号已存在');
+                return;
+            }
+
+            data.versionNumbers.push(versionNumber);
+            saveData();
+            closeFormModal('versionFormModal');
+            renderVersions();
+            resetVersionForm();
+        }
+
+        function resetVersionFormModal() {
+            document.getElementById('versionFormModalForm').reset();
+            document.getElementById('versionFormNumber').value = '0';
+        }
+
+        // 表单弹窗：业务功能
+        function openAddFunctionModal() {
+            if (!checkPermission('添加业务功能')) return;
+            resetFunctionFormModal();
+            openFormModal('functionFormModal');
+            document.getElementById('functionFormName').focus();
+        }
+
+        function handleFunctionFormSubmit(e) {
+            e.preventDefault();
+            if (!checkPermission('添加/编辑业务功能')) return;
+
+            const id = document.getElementById('functionFormId').value;
+            const code = document.getElementById('functionFormCode').value;
+            const attrType = document.getElementById('functionFormAttrType').value;
+
+            const existingFunc = data.functions.find(f => f.code === code && f.id !== id);
+            if (existingFunc) {
+                alert('业务编码已存在，请使用不同的编码');
+                return;
+            }
+
+            let attributes = [];
+            const attrMap = {};
+            document.querySelectorAll('#functionFormAttributesList input').forEach(input => {
+                const attrId = input.dataset.attrId;
+                const field = input.dataset.attrField;
+                if (!attrMap[attrId]) attrMap[attrId] = { id: attrId };
+                attrMap[attrId][field] = input.value;
+            });
+            attributes = Object.values(attrMap);
+
+            const attrCodes = attributes.map(a => a.code);
+            const uniqueAttrCodes = new Set(attrCodes);
+            if (attrCodes.length !== uniqueAttrCodes.size) {
+                alert('功能属性编码不能重复，请检查');
+                return;
+            }
+
+            const func = {
+                id: id || Date.now().toString(),
+                name: document.getElementById('functionFormName').value,
+                code: code,
+                attrType: attrType,
+                attributes: attributes
+            };
+
+            if (id) {
+                const index = data.functions.findIndex(f => f.id === id);
+                data.functions[index] = func;
+            } else {
+                data.functions.push(func);
+            }
+
+            saveData();
+            closeFormModal('functionFormModal');
+            renderFunctions();
+            renderDeviceDisplay();
+        }
+
+        function addFunctionFormAttribute(attr = null) {
+            if (!attr && !checkPermission('添加属性')) return;
+
+            const list = document.getElementById('functionFormAttributesList');
+            const attrId = attr ? attr.id : Date.now().toString() + Math.random();
+            const div = document.createElement('div');
+            div.className = 'attr-input-group';
+            div.innerHTML = `
+                <div class="attr-input-row">
+                    <input type="text" placeholder="属性名称" value="${attr ? attr.name : ''}" data-attr-id="${attrId}" data-attr-field="name" required>
+                    <input type="text" placeholder="属性编码" value="${attr ? attr.code : ''}" data-attr-id="${attrId}" data-attr-field="code" required>
+                    <button type="button" class="delete-attr-btn" onclick="this.parentElement.parentElement.remove()">删除</button>
+                </div>
+            `;
+            list.appendChild(div);
+        }
+
+        function resetFunctionFormModal() {
+            document.getElementById('functionFormModalForm').reset();
+            document.getElementById('functionFormId').value = '';
+            document.getElementById('functionFormAttributesList').innerHTML = '';
+        }
+
+        // 编辑设备的弹窗版本
+        function editDeviceModal(id) {
+            if (!checkPermission('编辑设备')) return;
+
+            const devices = getCurrentProjectDevices();
+            const device = devices.find(d => d.id === id);
+            if (!device) return;
+
+            document.getElementById('deviceFormId').value = device.id;
+            document.getElementById('deviceFormName').value = device.name;
+            document.getElementById('deviceFormSpcid').value = device.spcid;
+            document.getElementById('deviceFormType').value = device.deviceType || 'ring';
+
+            openFormModal('deviceFormModal');
+            document.getElementById('deviceFormName').focus();
+        }
+
+        // 编辑业务功能的弹窗版本
+        function editFunctionModal(id) {
+            if (!checkPermission('编辑业务功能')) return;
+
+            const func = data.functions.find(f => f.id === id);
+            if (!func) return;
+
+            document.getElementById('functionFormId').value = func.id;
+            document.getElementById('functionFormName').value = func.name;
+            document.getElementById('functionFormCode').value = func.code;
+            document.getElementById('functionFormAttrType').value = func.attrType;
+
+            document.getElementById('functionFormAttributesList').innerHTML = '';
+            if (func.attributes && func.attributes.length > 0) {
+                func.attributes.forEach(attr => addFunctionFormAttribute(attr));
+            }
+
+            openFormModal('functionFormModal');
+            document.getElementById('functionFormName').focus();
+        }
+
+        // 添加属性输入框
+        function addAttributeInput(attr = null) {
+            if (!attr && !checkPermission('添加属性')) return;
+            
+            const list = document.getElementById('attributesList');
+            
+            const attrId = attr ? attr.id : Date.now().toString() + Math.random();
+            const div = document.createElement('div');
+            div.className = 'attr-input-group';
+            div.innerHTML = `
+                <div class="attr-input-row">
+                    <input type="text" placeholder="属性名称" value="${attr ? attr.name : ''}" data-attr-id="${attrId}" data-attr-field="name" required>
+                    <input type="text" placeholder="属性编码" value="${attr ? attr.code : ''}" data-attr-id="${attrId}" data-attr-field="code" required>
+                    <button type="button" class="delete" onclick="this.parentElement.parentElement.remove()">删除</button>
+                </div>
+            `;
+            list.appendChild(div);
+        }
+
+        // 渲染所有数据
+        function renderAll() {
+            renderDeviceDisplay();
+            renderDevices();
+            renderFunctions();
+            renderVersions();
+        }
+
+        // 渲染主页设备展示
+        function renderDeviceDisplay() {
+            const display = document.getElementById('deviceDisplay');
+            const devices = getCurrentProjectDevices();
+            const projectName = getCurrentProjectName();
+
+            if (devices.length === 0) {
+                display.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📦</div>
+                        <h2>[${projectName}] 暂无设备数据</h2>
+                        <p>请前往数据管理页面添加设备信息</p>
+                        <div>
+                            <button onclick="switchMainTab('manage'); event.stopPropagation();">前往管理页面</button>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            // 过滤设备
+            let filteredDevices = devices;
+            if (deviceTypeFilter !== 'all') {
+                filteredDevices = devices.filter(d => d.deviceType === deviceTypeFilter);
+            }
+
+            // 分类统计
+            const ringCount = devices.filter(d => d.deviceType === 'ring').length;
+            const watchCount = devices.filter(d => d.deviceType === 'watch').length;
+
+            let cardsHtml = '';
+
+            if (filteredDevices.length === 0) {
+                cardsHtml += '<div class="empty-state"><p>该分类下暂无设备</p></div>';
+            } else {
+                // 按SPCID倒序排列设备
+                const sortedDevices = [...filteredDevices].sort((a, b) => {
+                    return b.spcid.localeCompare(a.spcid, undefined, { numeric: true, sensitivity: 'base' });
+                });
+
+                sortedDevices.forEach(device => {
+                    const versionCount = device.versions ? device.versions.length : 0;
+                    const isWatch = device.deviceType === 'watch';
+                    const typeBadge = isWatch
+                        ? `<div class="device-type-badge type-watch" title="手表手环类">
+                            <img src="/img/watch.png" alt="手表手环类">
+                       </div>`
+                        : `<div class="device-type-badge type-ring" title="戒指类">
+                            <img src="/img/ring.png" alt="戒指类">
+                       </div>`;
+                    let html = `
+                    <div class="device-card">
+                        ${typeBadge}
+                        <div class="device-card-header">
+                            <h2>${device.name}</h2>
+                        </div>
+                        <div class="device-info">
+                            <span class="device-info-label">SPCID</span>
+                            <span class="device-info-value">${device.spcid}</span>
+                        </div>
+                        <div class="device-info">
+                            <span class="device-info-label">版本数</span>
+                            <span class="device-info-value">${versionCount}</span>
+                        </div>
+                        <div class="card-actions">
+                            <button class="icon-btn btn-export" onclick="exportDeviceJson('${device.id}')">
+                                📥<span class="btn-tooltip">导出JSON</span>
+                            </button>
+                            <button class="icon-btn btn-detail" onclick="showDeviceDetail('${device.id}')">
+                                🔍<span class="btn-tooltip">查看详情</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                    cardsHtml += html;
+                });
+            }
+
+            display.innerHTML = `
+                <div style="margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h2 style="margin: 0; color: #333;">[${projectName}] 设备列表 (${filteredDevices.length})</h2>
+                        <button onclick="exportAllDevicesJson()" style="background: #52c41a; padding: 10px 20px; font-size: 14px;">📥 导出全部</button>
+                    </div>
+                    <div class="device-filter" style="display: flex; gap: 10px;">
+                        <button class="filter-btn ${deviceTypeFilter === 'all' ? 'active' : ''}" onclick="setDeviceTypeFilter('all')">全部 (${devices.length})</button>
+                        <button class="filter-btn ${deviceTypeFilter === 'ring' ? 'active' : ''}" onclick="setDeviceTypeFilter('ring')">戒指类 (${ringCount})</button>
+                        <button class="filter-btn ${deviceTypeFilter === 'watch' ? 'active' : ''}" onclick="setDeviceTypeFilter('watch')">手表手环类 (${watchCount})</button>
+                    </div>
+                </div>
+                <div class="device-grid">${cardsHtml}</div>
+            `;
+        }
+
+        // 显示设备详情弹窗
+        function showDeviceDetail(deviceId) {
+            const devices = getCurrentProjectDevices();
+            const device = devices.find(d => d.id === deviceId);
+            if (!device) return;
+
+            document.getElementById('detailDeviceName').textContent = device.name;
+            document.getElementById('detailDeviceSpcid').textContent = 'SPCID: ' + device.spcid;
+
+            const body = document.getElementById('detailDeviceBody');
+            let html = '';
+
+            if (device.versions && device.versions.length > 0) {
+                const sortedVersions = [...device.versions].sort((a, b) =>
+                    b.versionNumber.localeCompare(a.versionNumber, undefined, { numeric: true, sensitivity: 'base' })
+                );
+
+                sortedVersions.forEach(ver => {
+                    const funcCount = ver.functions ? ver.functions.length : 0;
+                    html += `<div class="detail-version-block">
+                        <div class="detail-version-header">
+                            <span class="version-badge">版本 ${ver.versionNumber}</span>
+                            <span class="func-count">${funcCount} 个功能</span>
+                        </div>
+                        <div class="detail-func-list">`;
+
+                    if (ver.functions && ver.functions.length > 0) {
+                        const sortedFunctions = [...ver.functions].sort((a, b) => {
+                            const funcA = data.functions.find(f => f.id === a.functionId);
+                            const funcB = data.functions.find(f => f.id === b.functionId);
+                            if (!funcA || !funcB) return 0;
+                            return funcA.code.localeCompare(funcB.code, undefined, { numeric: true, sensitivity: 'base' });
+                        });
+
+                        sortedFunctions.forEach(funcData => {
+                            const func = data.functions.find(f => f.id === funcData.functionId);
+                            if (func) {
+                                html += `<div class="detail-func-item">
+                                    <h4>${func.name}</h4>
+                                    <div class="function-info">编码: ${func.code} | 类型: ${func.attrType}</div>`;
+
+                                if (func.attrType !== '无' && funcData.selectedAttrIds && funcData.selectedAttrIds.length > 0) {
+                                    html += `<div style="margin-top: 6px;">`;
+                                    funcData.selectedAttrIds.forEach(attrId => {
+                                        const attr = func.attributes.find(a => a.id === attrId);
+                                        if (attr) {
+                                            html += `<span class="attribute-tag">${attr.name}</span>`;
+                                        }
+                                    });
+                                    html += `</div>`;
+                                }
+                                html += `</div>`;
+                            }
+                        });
+                    } else {
+                        html += `<div class="detail-empty">暂无业务功能</div>`;
+                    }
+
+                    html += `</div></div>`;
+                });
+            } else {
+                html = `<div class="detail-empty">暂无协议版本</div>`;
+            }
+
+            body.innerHTML = html;
+            document.getElementById('deviceDetailOverlay').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // 关闭设备详情弹窗
+        function closeDeviceDetail() {
+            document.getElementById('deviceDetailOverlay').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // 渲染设备列表
+        function renderDevices() {
+            const list = document.getElementById('deviceList');
+            const devices = getCurrentProjectDevices();
+            const projectName = getCurrentProjectName();
+
+            list.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <div>
+                        <h2 style="margin: 0 0 5px 0;">[${projectName}] 设备列表</h2>
+                        <p style="color: #666; margin: 0;">以下设备属于 "${projectName}" 项目 (${devices.length})</p>
+                    </div>
+                    <button class="add-new-btn" onclick="openAddDeviceModal()">+ 添加设备</button>
+                </div>`;
+
+            // 按SPCID倒序排列
+            const sortedDevices = [...devices].sort((a, b) => {
+                return b.spcid.localeCompare(a.spcid, undefined, { numeric: true, sensitivity: 'base' });
+            });
+
+            sortedDevices.forEach(device => {
+                const versionCount = device.versions ? device.versions.length : 0;
+
+                list.innerHTML += `
+                    <div class="data-item">
+                        <h3>${device.name}</h3>
+                        <p><strong>SPCID:</strong> ${device.spcid}</p>
+                        <p><strong>设备类型:</strong> ${device.deviceType === 'watch' ? '手表手环类' : '戒指类'}</p>
+                        <p><strong>协议版本数:</strong> ${versionCount}</p>
+                        <div class="actions">
+                            <button class="edit" onclick="editDeviceModal('${device.id}')">编辑</button>
+                            <button class="add-version" onclick="addDeviceVersion('${device.id}')">添加版本</button>
+                            <button class="delete" onclick="deleteDevice('${device.id}')">删除</button>
+                        </div>
+                        ${renderDeviceVersions(device)}
+                    </div>
+                `;
+            });
+        }
+
+        // 渲染设备的版本列表
+        function renderDeviceVersions(device) {
+            if (!device.versions || device.versions.length === 0) return '';
+            
+            // 按版本号倒序排列
+            const sortedVersions = [...device.versions].sort((a, b) => {
+                return b.versionNumber.localeCompare(a.versionNumber, undefined, { numeric: true, sensitivity: 'base' });
+            });
+            
+            let html = '<div class="nested-list">';
+            sortedVersions.forEach((ver) => {
+                const originalIndex = device.versions.indexOf(ver);
+                const funcCount = ver.functions ? ver.functions.length : 0;
+                const funcNames = ver.functions ? ver.functions.map(fd => {
+                    const func = data.functions.find(f => f.id === fd.functionId);
+                    return func ? func.name : '未知';
+                }).join(', ') : '无';
+                
+                html += `
+                    <div class="nested-item">
+                        <strong>版本 ${ver.versionNumber}</strong>
+                        <p>业务功能数: ${funcCount}</p>
+                        <p>功能列表: ${funcNames}</p>
+                        <button class="edit" onclick="editDeviceVersion('${device.id}', ${originalIndex})">编辑</button>
+                        <button class="delete" onclick="deleteDeviceVersion('${device.id}', ${originalIndex})">删除</button>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            return html;
+        }
+
+        // 渲染业务功能列表
+        function renderFunctions() {
+            const list = document.getElementById('functionList');
+            list.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="margin: 0;">业务功能列表 (${data.functions.length})</h2>
+                    <button class="add-new-btn" onclick="openAddFunctionModal()">+ 添加功能</button>
+                </div>`;
+            
+            // 按功能编码排序
+            const sortedFunctions = [...data.functions].sort((a, b) => {
+                return a.code.localeCompare(b.code, undefined, { numeric: true, sensitivity: 'base' });
+            });
+            
+            sortedFunctions.forEach(func => {
+                let attributesHtml = '';
+                
+                if (func.attrType === '无') {
+                    attributesHtml = '<p><strong>功能属性:</strong> 无</p>';
+                } else if (func.attributes && func.attributes.length > 0) {
+                    attributesHtml = `
+                        <div class="nested-list">
+                            <strong>功能属性:</strong>
+                            ${func.attributes.map(a => `<div class="nested-item">${a.name} (${a.code})</div>`).join('')}
+                        </div>
+                    `;
+                } else {
+                    attributesHtml = '<p><strong>功能属性:</strong> 未设置</p>';
+                }
+
+                list.innerHTML += `
+                    <div class="data-item">
+                        <h3>${func.name}</h3>
+                        <p><strong>业务编码:</strong> ${func.code}</p>
+                        <p><strong>属性类型:</strong> ${func.attrType}</p>
+                        ${attributesHtml}
+                        <div class="actions">
+                            <button class="edit" onclick="editFunctionModal('${func.id}')">编辑</button>
+                            <button class="delete" onclick="deleteFunction('${func.id}')">删除</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // 渲染协议版本号列表
+        function renderVersions() {
+            const list = document.getElementById('versionList');
+            list.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="margin: 0;">协议版本号列表 (${data.versionNumbers.length})</h2>
+                    <button class="add-new-btn" onclick="openAddVersionModal()">+ 添加版本号</button>
+                </div>`;
+            
+            // 按版本号倒序排列
+            const sortedVersions = [...data.versionNumbers].sort((a, b) => {
+                return b.localeCompare(a, undefined, { numeric: true, sensitivity: 'base' });
+            });
+            
+            sortedVersions.forEach(versionNumber => {
+                list.innerHTML += `
+                    <div class="data-item">
+                        <h3>版本 ${versionNumber}</h3>
+                    </div>
+                `;
+            });
+        }
+
+        // 添加设备版本
+        function addDeviceVersion(deviceId) {
+            if (!checkPermission('添加设备版本')) return;
+            
+            currentEditDevice = deviceId;
+            currentEditVersionIndex = null;
+            
+            const grid = document.getElementById('versionSelectionGrid');
+            grid.innerHTML = '';
+            
+            // 按版本号倒序排列
+            const sortedVersions = [...data.versionNumbers].sort((a, b) => {
+                return b.localeCompare(a, undefined, { numeric: true, sensitivity: 'base' });
+            });
+            
+            sortedVersions.forEach(versionNumber => {
+                const card = document.createElement('div');
+                card.className = 'selection-card radio-card';
+                card.dataset.version = versionNumber;
+                card.innerHTML = `
+                    <h4>版本 ${versionNumber}</h4>
+                `;
+                card.onclick = function() {
+                    document.querySelectorAll('#versionSelectionGrid .selection-card').forEach(c => c.classList.remove('selected'));
+                    this.classList.add('selected');
+                };
+                grid.appendChild(card);
+            });
+            
+            document.getElementById('addVersionModal').classList.add('active');
+        }
+
+        // 确认添加版本
+        function confirmAddVersion() {
+            const selected = document.querySelector('#versionSelectionGrid .selection-card.selected');
+            if (!selected) {
+                alert('请选择一个版本号');
+                return;
+            }
+
+            const devices = getCurrentProjectDevices();
+            const device = devices.find(d => d.id === currentEditDevice);
+            if (!device) return;
+
+            const versionNumber = selected.dataset.version;
+
+            if (!device.versions) device.versions = [];
+
+            if (device.versions.some(v => v.versionNumber === versionNumber)) {
+                alert('该版本号已存在');
+                return;
+            }
+
+            device.versions.push({
+                versionNumber: versionNumber,
+                functions: []
+            });
+
+            saveData();
+            renderDevices();
+            renderDeviceDisplay();
+            closeModal('addVersionModal');
+        }
+
+        // 编辑设备版本
+        function editDeviceVersion(deviceId, versionIndex) {
+            if (!checkPermission('编辑设备版本')) return;
+
+            currentEditDevice = deviceId;
+            currentEditVersionIndex = versionIndex;
+
+            const devices = getCurrentProjectDevices();
+            const device = devices.find(d => d.id === deviceId);
+            if (!device || !device.versions[versionIndex]) return;
+
+            const version = device.versions[versionIndex];
+            const content = document.getElementById('editVersionContent');
+
+            let html = `<h3 style="margin-bottom: 15px;">版本 ${version.versionNumber} - 选择业务功能</h3>`;
+            html += '<div class="selection-grid" id="functionSelectionGrid">';
+
+            data.functions.forEach(func => {
+                const isSelected = version.functions && version.functions.some(f => f.functionId === func.id);
+                const selectedFunc = isSelected ? version.functions.find(f => f.functionId === func.id) : null;
+
+                html += `
+                    <div class="selection-card checkbox-card ${isSelected ? 'selected' : ''}" data-function-id="${func.id}" onclick="toggleFunctionSelection(this, '${func.id}')">
+                        <h4>${func.name}</h4>
+                        <p>编码: ${func.code}</p>
+                        <p>属性: ${func.attrType}</p>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            html += '<div id="attributeSelectionArea" style="margin-top: 30px;"></div>';
+
+            content.innerHTML = html;
+
+            // 如果有已选择的功能,显示其属性选择
+            if (version.functions && version.functions.length > 0) {
+                renderAttributeSelection(version.functions);
+            }
+
+            document.getElementById('editVersionModal').classList.add('active');
+        }
+
+        // 切换功能选择
+        function toggleFunctionSelection(card, functionId) {
+            card.classList.toggle('selected');
+            
+            // 先从当前 DOM 中收集已选属性状态，避免刷新时丢失
+            const currentAttrSelections = {};
+            document.querySelectorAll('#attributeSelectionArea [data-attr-id].selected').forEach(c => {
+                const fid = c.dataset.functionId;
+                if (!currentAttrSelections[fid]) currentAttrSelections[fid] = [];
+                currentAttrSelections[fid].push(c.dataset.attrId);
+            });
+            
+            const selectedCards = document.querySelectorAll('#functionSelectionGrid .selection-card.selected');
+            const selectedFunctions = Array.from(selectedCards).map(c => ({
+                functionId: c.dataset.functionId,
+                selectedAttrIds: currentAttrSelections[c.dataset.functionId] || []
+            }));
+            
+            renderAttributeSelection(selectedFunctions);
+        }
+
+        // 渲染属性选择区域
+        function renderAttributeSelection(selectedFunctions) {
+            const area = document.getElementById('attributeSelectionArea');
+            if (!selectedFunctions || selectedFunctions.length === 0) {
+                area.innerHTML = '';
+                return;
+            }
+            
+            let html = '<h3 style="margin-bottom: 15px;">选择各功能的属性</h3>';
+            
+            selectedFunctions.forEach(funcData => {
+                const func = data.functions.find(f => f.id === funcData.functionId);
+                if (!func || func.attrType === '无' || !func.attributes || func.attributes.length === 0) return;
+                
+                html += `
+                    <div class="version-instance">
+                        <h4 style="margin-bottom: 15px;">${func.name} - ${func.attrType}</h4>
+                        <div class="selection-grid">
+                `;
+                
+                func.attributes.forEach(attr => {
+                    const isSelected = funcData.selectedAttrIds && funcData.selectedAttrIds.includes(attr.id);
+                    const cardClass = func.attrType === '互斥属性' ? 'radio-card' : 'checkbox-card';
+                    
+                    html += `
+                        <div class="selection-card ${cardClass} ${isSelected ? 'selected' : ''}" 
+                             data-function-id="${func.id}" 
+                             data-attr-id="${attr.id}"
+                             onclick="toggleAttributeSelection(this, '${func.id}', '${attr.id}', '${func.attrType}')">
+                            <h4>${attr.name}</h4>
+                            <p>编码: ${attr.code}</p>
+                        </div>
+                    `;
+                });
+                
+                html += '</div></div>';
+            });
+            
+            area.innerHTML = html;
+        }
+
+        // 切换属性选择
+        function toggleAttributeSelection(card, functionId, attrId, attrType) {
+            if (attrType === '互斥属性') {
+                // 互斥属性:取消同功能的其他选择
+                document.querySelectorAll(`[data-function-id="${functionId}"][data-attr-id]`).forEach(c => {
+                    c.classList.remove('selected');
+                });
+                card.classList.add('selected');
+            } else {
+                // 共享属性:可多选
+                card.classList.toggle('selected');
+            }
+        }
+
+        // 确认编辑版本
+        function confirmEditVersion() {
+            const devices = getCurrentProjectDevices();
+            const device = devices.find(d => d.id === currentEditDevice);
+            if (!device || currentEditVersionIndex === null) return;
+            
+            const version = device.versions[currentEditVersionIndex];
+            
+            // 获取选中的功能
+            const selectedFunctionCards = document.querySelectorAll('#functionSelectionGrid .selection-card.selected');
+            version.functions = [];
+            
+            selectedFunctionCards.forEach(card => {
+                const functionId = card.dataset.functionId;
+                const func = data.functions.find(f => f.id === functionId);
+                
+                // 获取该功能选中的属性
+                const selectedAttrCards = document.querySelectorAll(`[data-function-id="${functionId}"][data-attr-id].selected`);
+                const selectedAttrIds = Array.from(selectedAttrCards).map(c => c.dataset.attrId);
+                
+                version.functions.push({
+                    functionId: functionId,
+                    selectedAttrIds: selectedAttrIds
+                });
+            });
+            
+            saveData();
+            renderDevices();
+            renderDeviceDisplay();
+            closeModal('editVersionModal');
+        }
+
+        // 关闭模态框
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        // 导出设备JSON
+        function exportDeviceJson(deviceId) {
+            const devices = getCurrentProjectDevices();
+            const device = devices.find(d => d.id === deviceId);
+            if (!device) {
+                alert('设备不存在');
+                return;
+            }
+
+            // 构建导出数据结构: {版本号: {功能编码: [属性编码数组]}}
+            const exportData = {};
+
+            if (device.versions && device.versions.length > 0) {
+                device.versions.forEach(ver => {
+                    const functionsObj = {};
+
+                    if (ver.functions && ver.functions.length > 0) {
+                        ver.functions.forEach(funcData => {
+                            const func = data.functions.find(f => f.id === funcData.functionId);
+                            if (func) {
+                                const attributeCodes = [];
+
+                                // 收集选中的属性编码
+                                if (funcData.selectedAttrIds && funcData.selectedAttrIds.length > 0) {
+                                    funcData.selectedAttrIds.forEach(attrId => {
+                                        const attr = func.attributes.find(a => a.id === attrId);
+                                        if (attr) {
+                                            attributeCodes.push(attr.code);
+                                        }
+                                    });
+                                }
+
+                                functionsObj[func.code] = attributeCodes;
+                            }
+                        });
+                    }
+
+                    exportData[ver.versionNumber] = functionsObj;
+                });
+            }
+
+            // 创建JSON文件并下载
+            const jsonStr = JSON.stringify(exportData, null, 4);
+            const blob = new Blob([jsonStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${device.spcid}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // 导出所有设备JSON
+        function exportAllDevicesJson() {
+            const devices = getCurrentProjectDevices();
+            const projectName = getCurrentProjectName();
+
+            if (devices.length === 0) {
+                alert('当前项目暂无设备数据');
+                return;
+            }
+
+            // 构建导出数据结构: {SPCID: {版本号: {功能编码: [属性编码数组]}}}
+            const exportData = {};
+
+            devices.forEach(device => {
+                exportData[device.spcid] = {};
+
+                if (device.versions && device.versions.length > 0) {
+                    device.versions.forEach(ver => {
+                        const functionsObj = {};
+
+                        if (ver.functions && ver.functions.length > 0) {
+                            ver.functions.forEach(funcData => {
+                                const func = data.functions.find(f => f.id === funcData.functionId);
+                                if (func) {
+                                    const attributeCodes = [];
+
+                                    // 收集选中的属性编码
+                                    if (funcData.selectedAttrIds && funcData.selectedAttrIds.length > 0) {
+                                        funcData.selectedAttrIds.forEach(attrId => {
+                                            const attr = func.attributes.find(a => a.id === attrId);
+                                            if (attr) {
+                                                attributeCodes.push(attr.code);
+                                            }
+                                        });
+                                    }
+
+                                    functionsObj[func.code] = attributeCodes;
+                                }
+                            });
+                        }
+
+                        exportData[device.spcid][ver.versionNumber] = functionsObj;
+                    });
+                }
+            });
+
+            // 创建JSON文件并下载
+            const jsonStr = JSON.stringify(exportData, null, 4);
+            const blob = new Blob([jsonStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${currentProject}_DeviceBusiness.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // 删除设备版本
+        function deleteDeviceVersion(deviceId, versionIndex) {
+            if (!checkPermission('删除设备版本')) return;
+            if (!confirm('确定要删除此版本吗?')) return;
+
+            const devices = getCurrentProjectDevices();
+            const device = devices.find(d => d.id === deviceId);
+            if (!device) return;
+
+            device.versions.splice(versionIndex, 1);
+            saveData();
+            renderDevices();
+            renderDeviceDisplay();
+        }
+
+        // 编辑设备
+        function editDevice(id) {
+            if (!checkPermission('编辑设备')) return;
+
+            const devices = getCurrentProjectDevices();
+            const device = devices.find(d => d.id === id);
+            if (!device) return;
+
+            document.getElementById('deviceId').value = device.id;
+            document.getElementById('deviceName').value = device.name;
+            document.getElementById('deviceSpcid').value = device.spcid;
+            document.getElementById('deviceType').value = device.deviceType || 'ring';
+
+            document.querySelectorAll('.main-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.main-content').forEach(content => content.classList.remove('active'));
+            document.querySelectorAll('.main-tab')[1].classList.add('active');
+            document.getElementById('manage').classList.add('active');
+
+            switchTab('device');
+            document.getElementById('deviceName').focus();
+        }
+
+        // 编辑业务功能
+        function editFunction(id) {
+            if (!checkPermission('编辑业务功能')) return;
+            
+            const func = data.functions.find(f => f.id === id);
+            if (!func) return;
+
+            document.getElementById('functionId').value = func.id;
+            document.getElementById('functionName').value = func.name;
+            document.getElementById('functionCode').value = func.code;
+            document.getElementById('functionAttrType').value = func.attrType;
+            
+            // 清空并重新填充属性列表
+            document.getElementById('attributesList').innerHTML = '';
+            if (func.attributes && func.attributes.length > 0) {
+                func.attributes.forEach(attr => addAttributeInput(attr));
+            }
+
+            document.querySelectorAll('.main-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.main-content').forEach(content => content.classList.remove('active'));
+            document.querySelectorAll('.main-tab')[1].classList.add('active');
+            document.getElementById('manage').classList.add('active');
+
+            switchTab('function');
+            document.getElementById('functionName').focus();
+        }
+
+        // 删除设备
+        function deleteDevice(id) {
+            if (!checkPermission('删除设备')) return;
+            if (!confirm('确定要删除此设备吗?')) return;
+            const devices = getCurrentProjectDevices();
+            const filteredDevices = devices.filter(d => d.id !== id);
+            setCurrentProjectDevices(filteredDevices);
+            renderProjectSwitcher();
+            saveData();
+            renderDevices();
+            renderDeviceDisplay();
+        }
+
+        // 删除业务功能
+        function deleteFunction(id) {
+            if (!checkPermission('删除业务功能')) return;
+            if (!confirm('确定要删除此业务功能吗?\n注意:所有使用此功能的设备版本都会受影响')) return;
+            data.functions = data.functions.filter(f => f.id !== id);
+            // 删除所有项目中的相关功能引用
+            Object.keys(data.projects).forEach(projectId => {
+                const projectDevices = data.projects[projectId].devices || [];
+                projectDevices.forEach(d => {
+                    if (d.versions) {
+                        d.versions.forEach(v => {
+                            if (v.functions) {
+                                v.functions = v.functions.filter(f => f.functionId !== id);
+                            }
+                        });
+                    }
+                });
+            });
+            saveData();
+            renderAll();
+        }
+
+        // 删除协议版本号
+        function deleteVersionNumber(versionNumber) {
+            if (!checkPermission('删除协议版本号')) return;
+            if (!confirm('确定要删除此版本号吗?\n注意:所有使用此版本号的设备都会受影响')) return;
+            data.versionNumbers = data.versionNumbers.filter(v => v !== versionNumber);
+            // 删除所有项目中的相关版本引用
+            Object.keys(data.projects).forEach(projectId => {
+                const projectDevices = data.projects[projectId].devices || [];
+                projectDevices.forEach(d => {
+                    if (d.versions) {
+                        d.versions = d.versions.filter(v => v.versionNumber !== versionNumber);
+                    }
+                });
+            });
+            saveData();
+            renderAll();
+        }
+
+        // 页面加载时初始化
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
