@@ -1299,6 +1299,7 @@
 
             <div class="storage-info">
                 <p>数据自动保存到服务器本地存储</p>
+                <button onclick="exportRawDevicesJson()" style="margin-top: 10px; background: #fa8c16;">📦 导出原始 devices.json</button>
             </div>
         </div>
     </div>
@@ -2623,6 +2624,20 @@
             const a = document.createElement('a');
             a.href = url;
             a.download = `${currentProject}_DeviceBusiness.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // 导出原始 devices.json
+        function exportRawDevicesJson() {
+            const jsonStr = JSON.stringify(data, null, 4);
+            const blob = new Blob([jsonStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'devices.json';
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
